@@ -2,32 +2,20 @@ package assl.cs.usu.edu.energyprofiling;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.res.Resources;
-import android.os.BatteryManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.os.Process;
 import android.os.Debug;
+import android.os.Process;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> memUsed, memAvailable, memFree, cached, threshold;
     private List<Float> cpuTotal, cpuAM;
     private List<Integer> memoryAM;
-
+    //Venky
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
