@@ -20,7 +20,7 @@ public class Profiler {
     }
 
     public void start() {
-        //cal readCPUUUsage() periodically
+        //cal readCPUUsage() periodically
     }
 
     public double stop() {

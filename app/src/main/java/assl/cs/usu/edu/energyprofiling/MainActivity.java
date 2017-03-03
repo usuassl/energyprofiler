@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.Debug;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,12 +44,12 @@ public class MainActivity extends AppCompatActivity {
     private List<Integer> memoryAM;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        infoTextView = (TextView) findViewById(R.id.infoText) ;
-
+        infoTextView = (TextView) findViewById(R.id.infoText);
+        infoTextView.setMovementMethod(new ScrollingMovementMethod());
 
         try {
             Class<?> powerProfileClazz = Class.forName("com.android.internal.os.PowerProfile");
@@ -92,21 +94,29 @@ public class MainActivity extends AppCompatActivity {
 
             getCpuTime();
             getCpuFreq();
+
             Log.d("Profiler", batteryCap.invoke(powerProInstance, null).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 1}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 2}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 3}).toString());
 
-
             Profiler.getInstance().start();
+
             //do something
             bubblesSort();
+
             double energy = Profiler.getInstance().stop();
 
-        } catch (Exception e) {e.printStackTrace();}
+            getCpuTime();
+            getCpuFreq();
+
+            infoTextView.invalidate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void getCpuTime() {
+    private void getCpuTime(){
         try {
             //CPU time for a specific process
             BufferedReader reader = new BufferedReader(new FileReader("/proc/" + pId + "/stat"));
@@ -121,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e) {e.printStackTrace();}
     }
 
-    private void getCpuFreq() {
+    private void getCpuFreq(){
         try {
             //Runtime.getRuntime().exec("su -c \"echo 1234 > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq\"");
 
@@ -148,17 +158,44 @@ public class MainActivity extends AppCompatActivity {
             cpuFreq = reader.readLine();
             reader.close();
             infoTextView.append("CPU frequency (core 3): " + cpuFreq + "\n");
+
+            bubblesSort();
         }catch (Exception e) {e.printStackTrace();}
     }
 
+    private void bubblesSort(){
+        Random rng = new Random();
+        int[] arr = new int[11];
 
-    private void bubblesSort() {
+        for(int i = 0; i < arr.length; i++) {
+            arr[i] = rng.nextInt(10);
+        }
+
+        System.out.print("Pre sort: ");
+        infoTextView.append("Pre sort: ");
+        for(int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + ", ");
+            infoTextView.append(arr[i] + ", ");
+        }
+        infoTextView.append("\n");
+
         //write a bubble sort algorithm here
-        for(int i = 0; i < 100; i++) {
-            for(int j = 0; j < 100; j++) {
-                //sort
+        for(int i = 0; i < arr.length; i++) {
+            for(int j = 1; j < arr.length; j++) {
+                if(arr[j] < arr[j-1]) {
+                    int temp = arr[j-1];
+                    arr[j-1] = arr[j];
+                    arr[j] = temp;
+                }
             }
         }
-    }
 
+        System.out.print("Post sort: ");
+        infoTextView.append("Post sort: ");
+        for(int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + ", ");
+            infoTextView.append(arr[i] + ", ");
+        }
+        infoTextView.append("\n");
+    }
 }
