@@ -84,13 +84,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 1}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 2}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 3}).toString());
-
-
-            Profiler.getInstance().start();
-            //do something
-            bubblesSort();
-            double energy = Profiler.getInstance().stop();
-
         } catch (Exception e) {e.printStackTrace();}
     }
 
@@ -139,14 +132,29 @@ public class MainActivity extends AppCompatActivity {
         }catch (Exception e) {e.printStackTrace();}
     }
 
-
-    private void bubblesSort() {
-        //write a bubble sort algorithm here
-        for(int i = 0; i < 100; i++) {
-            for(int j = 0; j < 100; j++) {
-                //sort
-            }
-        }
-    }
+//    private String cmdCat(String f){
+//
+//        String[] command = {"cat", f};
+//        StringBuilder cmdReturn = new StringBuilder();
+//
+//        try {
+//            ProcessBuilder processBuilder = new ProcessBuilder(command);
+//            Process process = processBuilder.start();
+//
+//            InputStream inputStream = process.getInputStream();
+//            int c;
+//
+//            while ((c = inputStream.read()) != -1) {
+//                cmdReturn.append((char) c);
+//            }
+//
+//            return cmdReturn.toString();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return "Something Wrong";
+//        }
+//
+//    }
 
 }
