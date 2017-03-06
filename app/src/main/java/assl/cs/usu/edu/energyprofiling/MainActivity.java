@@ -17,6 +17,56 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+class CpuInfo extends Thread
+{
+    private TextView infoTextView;
+    int interval;
+    CpuInfo(TextView infoTextV,int time)
+    {
+
+        infoTextView=infoTextV;
+        interval=time;
+    }
+
+
+    public void run()
+    {
+
+        try {
+            String cpuFreq = "";
+
+            infoTextView.append("cpu frequnecy for interval "+interval+"ms");
+            for (int i = 0; i < 5; i++) {
+                RandomAccessFile reader = new RandomAccessFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
+
+                cpuFreq = reader.readLine();
+                reader.close();
+
+                infoTextView.append("CPU frequency (core 0): " + cpuFreq + "\n");
+
+                reader = new RandomAccessFile("/sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq", "r");
+                cpuFreq = reader.readLine();
+                reader.close();
+                infoTextView.append("CPU frequency (core 1): " + cpuFreq + "\n");
+
+                reader = new RandomAccessFile("/sys/devices/system/cpu/cpu2/cpufreq/scaling_cur_freq", "r");
+                cpuFreq = reader.readLine();
+                reader.close();
+                infoTextView.append("CPU frequency (core 2): " + cpuFreq + "\n");
+
+                reader = new RandomAccessFile("/sys/devices/system/cpu/cpu3/cpufreq/scaling_cur_freq", "r");
+                cpuFreq = reader.readLine();
+                reader.close();
+                infoTextView.append("CPU frequency (core 3): " + cpuFreq + "\n");
+                Thread.sleep(interval);
+            }
+
+        }catch (Exception e) {e.printStackTrace();}
+
+    }
+
+
+}
 public class MainActivity extends AppCompatActivity {
 
     private TextView infoTextView;
@@ -28,13 +78,13 @@ public class MainActivity extends AppCompatActivity {
     private List<String> memUsed, memAvailable, memFree, cached, threshold;
     private List<Float> cpuTotal, cpuAM;
     private List<Integer> memoryAM;
-    //Venky
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        infoTextView = (TextView) findViewById(R.id.infoText) ;
+        infoTextView = (TextView) findViewById(R.id.infoText);
 
 
         try {
@@ -75,19 +125,43 @@ public class MainActivity extends AppCompatActivity {
             pId = Process.myPid();
 
             am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-            amMI = am.getProcessMemoryInfo(new int[]{ pId });
+            amMI = am.getProcessMemoryInfo(new int[]{pId});
             mi = new ActivityManager.MemoryInfo();
 
-            getCpuTime();
-            getCpuFreq();
+            String cpu_power = averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 0}).toString();
+            float cpuPower = Float.parseFloat(cpu_power);
+            long start_q = getCpuTime();
+            QuickSortEx q = new QuickSortEx(10000);
+            q.sort();
+            long end_q = getCpuTime();
+            System.out.println("end:  " + end_q + " start " + start_q);
+            float cpu_energy_q = (end_q - start_q) * cpuPower;
+            infoTextView.append("cpu energy for quicksort " + cpu_energy_q + "\n");
+            long start_b = getCpuTime();
+            BubbleSortEx b = new BubbleSortEx();
+            b.bubbleSort(10000);
+            long end_b = getCpuTime();
+            float cpu_energy_b = (end_b - start_b) * cpuPower;
+            infoTextView.append("cpu energy for Bubblesort " + cpu_energy_b + "\n");
+            CpuInfo info = new CpuInfo(infoTextView, 500);
+            info.start();
+            CpuInfo info1 = new CpuInfo(infoTextView, 100);
+            info1.start();
+            CpuInfo info2 = new CpuInfo(infoTextView, 1000);
+            info2.start();
+
             Log.d("Profiler", batteryCap.invoke(powerProInstance, null).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 1}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 2}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 3}).toString());
-        } catch (Exception e) {e.printStackTrace();}
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void getCpuTime() {
+    private long getCpuTime() {
         try {
             //CPU time for a specific process
             BufferedReader reader = new BufferedReader(new FileReader("/proc/" + pId + "/stat"));
@@ -97,64 +171,11 @@ public class MainActivity extends AppCompatActivity {
             //utime + stime + cutime + cstime
             long cputime = Long.parseLong(sa[13]) + Long.parseLong(sa[14]) + Long.parseLong(sa[15]) + Long.parseLong(sa[16]);
             reader.close();
+            return cputime;
 
-            System.out.println(cputime);
-        }catch (Exception e) {e.printStackTrace();}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
-
-    private void getCpuFreq() {
-        try {
-            //Runtime.getRuntime().exec("su -c \"echo 1234 > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq\"");
-
-            String cpuFreq = "";
-            RandomAccessFile reader = new RandomAccessFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
-            cpuFreq = reader.readLine();
-            reader.close();
-
-            //cpuFreq = cmdCat("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq");
-
-            infoTextView.append("CPU frequency (core 0): " + cpuFreq + "\n");
-
-            reader = new RandomAccessFile("/sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq", "r");
-            cpuFreq = reader.readLine();
-            reader.close();
-            infoTextView.append("CPU frequency (core 1): " + cpuFreq + "\n");
-
-            reader = new RandomAccessFile("/sys/devices/system/cpu/cpu2/cpufreq/scaling_cur_freq", "r");
-            cpuFreq = reader.readLine();
-            reader.close();
-            infoTextView.append("CPU frequency (core 2): " + cpuFreq + "\n");
-
-            reader = new RandomAccessFile("/sys/devices/system/cpu/cpu3/cpufreq/scaling_cur_freq", "r");
-            cpuFreq = reader.readLine();
-            reader.close();
-            infoTextView.append("CPU frequency (core 3): " + cpuFreq + "\n");
-        }catch (Exception e) {e.printStackTrace();}
-    }
-
-//    private String cmdCat(String f){
-//
-//        String[] command = {"cat", f};
-//        StringBuilder cmdReturn = new StringBuilder();
-//
-//        try {
-//            ProcessBuilder processBuilder = new ProcessBuilder(command);
-//            Process process = processBuilder.start();
-//
-//            InputStream inputStream = process.getInputStream();
-//            int c;
-//
-//            while ((c = inputStream.read()) != -1) {
-//                cmdReturn.append((char) c);
-//            }
-//
-//            return cmdReturn.toString();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return "Something Wrong";
-//        }
-//
-//    }
-
 }
