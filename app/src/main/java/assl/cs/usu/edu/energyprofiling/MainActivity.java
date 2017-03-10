@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private Debug.MemoryInfo[] amMI;
     private ActivityManager.MemoryInfo mi;
 
+    public static int cpu1Power, cpu2Power, cpu3Power, cpu4Power;
+
     private List<String> memUsed, memAvailable, memFree, cached, threshold;
     private List<Float> cpuTotal, cpuAM;
     private List<Integer> memoryAM;
@@ -74,6 +76,11 @@ public class MainActivity extends AppCompatActivity {
             infoTextView.append("CPU core 3: " + averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 2}).toString() + "\n");
             infoTextView.append("CPU core 4: " + averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 3}).toString() + "\n");
 
+            cpu1Power = (int) Double.parseDouble(( averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 0}).toString()));
+            cpu2Power = (int) Double.parseDouble(averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 1}).toString());
+            cpu3Power = (int) Double.parseDouble(averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 2}).toString());
+            cpu4Power = (int) Double.parseDouble(averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 3}).toString());
+
             infoTextView.append("WiFi on: " + averagePower.invoke(powerProInstance, new Object[]{"wifi.on", 0}).toString() + "\n");
             infoTextView.append("WiFi active: " + averagePower.invoke(powerProInstance, new Object[]{"wifi.active", 0}).toString() + "\n");
             infoTextView.append("Gps on: " + averagePower.invoke(powerProInstance, new Object[]{"gps.on", 0}).toString() + "\n");
@@ -97,14 +104,14 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 2}).toString());
             Log.d("Profiler", averagePower.invoke(powerProInstance, new Object[]{"cpu.active", 3}).toString());
 
-            Profiler.getInstance().start();
+            Profiler.getInstance().start(pId);
 
             //do something
             bubblesSort();
 
             double energy = Profiler.getInstance().stop();
 
-            infoTextView.append("Energy used: " + energy + "\n");
+            infoTextView.append("Energy used: " + energy + " Joules\n");
 
             infoTextView.invalidate();
         } catch (Exception e) {

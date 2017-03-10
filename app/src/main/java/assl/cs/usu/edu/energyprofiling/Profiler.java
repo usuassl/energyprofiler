@@ -14,7 +14,9 @@ public class Profiler {
 
     private static Profiler instance;
 
-    private int pId;
+    private static boolean isTracking = false;
+    private static long refreshRate = 500;
+    private int pid;
 
     private long startTime;
     private long stopTime;
@@ -29,9 +31,15 @@ public class Profiler {
         return instance;
     }
 
-    public void start() {
-        pId = Process.myPid();
+    /*
+    public void setpId(int inpid){
+        this.pId = inpid;
+    }
+    */
 
+    public void start(int inpid) {
+        pid = inpid;
+        isTracking = true;
         //calculate using readCPUUsage() periodically
         //TODO read CPU usages asynchronously
             readCPUUsage();
@@ -40,11 +48,20 @@ public class Profiler {
 
     public double stop() {
         //calculate energy consumption
-        double consumption = 0.0;
-
+        isTracking = false;
+        stopTime = getCpuTime();
         //TODO calculate here
 
-        stopTime = getCpuTime();
+        double consumption = 0.0;
+        long measuredTime = stopTime - startTime;
+        for(long i = 0; i <= measuredTime; i += refreshRate) {
+            double energy ;
+                energy = MainActivity.cpu1Power + MainActivity.cpu2Power + MainActivity.cpu3Power + MainActivity. cpu4Power;
+                energy *= (refreshRate * 1.0) / 1000.0;
+
+            consumption += energy;
+        }
+
         return consumption;
     }
 
@@ -57,7 +74,7 @@ public class Profiler {
     public long getCpuTime(){
         try {
             //CPU time for a specific process
-            BufferedReader reader = new BufferedReader(new FileReader("/proc/" + pId + "/stat"));
+            BufferedReader reader = new BufferedReader(new FileReader("/proc/" + pid + "/stat"));
 
             String[] sa = reader.readLine().split("[ ]+", 18);
 
